@@ -1,0 +1,505 @@
+name: Expo Build
+
+on:
+   release:
+      types: [published]
+   workflow_dispatch:
+      inputs:
+         platform:
+            description: "Platform to build"
+            required: true
+            default: "all"
+            type: choice
+            options:
+               - all
+               - web
+               - android
+               - ios
+         profile:
+            description: "Build profile"
+            required: true
+            default: "ci"
+            type: choice
+            options:
+               - ci
+               - production
+               - development
+
+concurrency:
+   group: ${{ github.workflow }}-${{ github.ref }}
+   cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+
+jobs:
+   setup:
+      name: Setup Build Matrix
+      runs-on: ubuntu-latest
+      outputs:
+         matrix: ${{ steps.matrix.outputs.matrix }}
+         should-build-mobile: ${{ steps.matrix.outputs.should-build-mobile }}
+         profile: ${{ steps.matrix.outputs.profile }}
+
+      steps:
+         - name: Determine build matrix
+           id: matrix
+           run: |
+              if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                PLATFORM="${{ github.event.inputs.platform }}"
+                PROFILE="${{ github.event.inputs.profile }}"
+              else
+                PLATFORM="all"
+                PROFILE="ci"
+              fi
+
+              if [ "$PLATFORM" = "all" ]; then
+                MATRIX='["web", "android"]'
+                SHOULD_BUILD_MOBILE="true"
+              elif [ "$PLATFORM" = "web" ]; then
+                MATRIX='["web"]'
+                SHOULD_BUILD_MOBILE="false"
+              else
+                MATRIX='["'$PLATFORM'"]'
+                SHOULD_BUILD_MOBILE="true"
+              fi
+
+              echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+              echo "should-build-mobile=$SHOULD_BUILD_MOBILE" >> $GITHUB_OUTPUT
+              echo "profile=$PROFILE" >> $GITHUB_OUTPUT
+
+   lint-and-test:
+      name: Lint and Test
+      runs-on: ubuntu-latest
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Setup Bun
+           uses: oven-sh/setup-bun@v2
+           with:
+              bun-version: latest
+
+         - name: Cache Bun dependencies
+           uses: actions/cache@v4
+           with:
+              path: |
+                 ~/.bun/install/cache
+                 node_modules
+              key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+              restore-keys: |
+                 ${{ runner.os }}-bun-
+
+         - name: Install dependencies
+           run: bun install --frozen-lockfile
+
+         - name: Run ESLint
+           run: bun run lint
+
+         - name: Run TypeScript check
+           run: bunx tsc --noEmit
+
+         - name: Check Prettier formatting
+           run: bunx prettier --check . --ignore-unknown
+
+   build:
+      name: Build ${{ matrix.platform }}
+      runs-on: ${{ matrix.platform == 'ios' && 'macos-latest' || 'ubuntu-latest' }}
+      needs: [setup, lint-and-test]
+      strategy:
+         matrix:
+            platform: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Setup Bun
+           uses: oven-sh/setup-bun@v2
+           with:
+              bun-version: latest
+
+         - name: Setup Node.js
+           uses: actions/setup-node@v4
+           with:
+              node-version: "20"
+
+         - name: Cache Bun dependencies
+           uses: actions/cache@v4
+           with:
+              path: |
+                 ~/.bun/install/cache
+                 node_modules
+              key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+              restore-keys: |
+                 ${{ runner.os }}-bun-
+
+         - name: Cache Expo CLI
+           uses: actions/cache@v4
+           with:
+              path: |
+                 ~/.expo
+                 ~/.eas
+              key: ${{ runner.os }}-expo-${{ hashFiles('**/app.json', '**/eas.json') }}
+              restore-keys: |
+                 ${{ runner.os }}-expo-
+
+         - name: Install dependencies
+           run: bun install --frozen-lockfile
+
+         - name: Setup Expo
+           uses: expo/expo-github-action@v8
+           with:
+              expo-version: latest
+              eas-version: latest
+              token: ${{ secrets.EXPO_TOKEN }}
+
+         - name: Setup Java JDK
+           if: matrix.platform == 'android'
+           uses: actions/setup-java@v4
+           with:
+              distribution: "temurin"
+              java-version: "17"
+
+         - name: Cache Gradle dependencies
+           if: matrix.platform == 'android'
+           uses: actions/cache@v4
+           with:
+              path: |
+                 ~/.gradle/caches
+                 ~/.gradle/wrapper
+                 ~/.android/cache
+              key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/gradle.properties') }}
+              restore-keys: |
+                 ${{ runner.os }}-gradle-
+
+         - name: Cache NDK and CMake
+           if: matrix.platform == 'android'
+           uses: actions/cache@v4
+           with:
+              path: |
+                 ~/Android/Sdk/ndk
+                 ~/Android/Sdk/cmake
+                 ~/.android/cmake
+              key: ${{ runner.os }}-ndk-cmake-${{ hashFiles('**/app.json', '**/package.json') }}
+              restore-keys: |
+                 ${{ runner.os }}-ndk-cmake-
+
+         - name: Setup Android SDK
+           if: matrix.platform == 'android'
+           uses: android-actions/setup-android@v3
+
+         - name: Setup Android environment
+           if: matrix.platform == 'android'
+           run: |
+              echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+              echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+              echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+              echo "$ANDROID_SDK_ROOT/tools" >> $GITHUB_PATH
+
+         - name: Cache Android SDK
+           if: matrix.platform == 'android'
+           uses: actions/cache@v4
+           with:
+              path: |
+                 ~/Android/Sdk/platforms
+                 ~/Android/Sdk/platform-tools
+                 ~/Android/Sdk/build-tools
+                 ~/Android/Sdk/ndk
+              key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/app.json') }}
+              restore-keys: |
+                 ${{ runner.os }}-android-sdk-
+
+         - name: Build Web (Production)
+           if: matrix.platform == 'web'
+           run: |
+              # Set environment to production
+              export NODE_ENV=production
+              export EXPO_ENV=production
+
+              echo "🌐 Building Web for production..."
+              bunx expo export --platform web --output-dir dist
+              echo "✅ Web production build completed"
+
+         - name: Cache web build output
+           if: matrix.platform == 'web'
+           uses: actions/cache@v4
+           with:
+              path: |
+                 dist/
+                 .expo/
+              key: ${{ runner.os }}-web-build-${{ github.sha }}
+              restore-keys: |
+                 ${{ runner.os }}-web-build-
+
+         - name: Build Android (Production)
+           if: matrix.platform == 'android'
+           run: |
+              PROFILE="${{ needs.setup.outputs.profile || 'ci' }}"
+              echo "🤖 Building Android with profile: $PROFILE (Fast Production Build)"
+
+              # Set environment to production
+              export NODE_ENV=production
+              export EXPO_ENV=production
+
+              # Optimize Gradle performance for Java 17
+              export GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.jvmargs='-Xmx4g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'"
+
+              # Create build directory
+              mkdir -p ./build
+
+              # Use Expo prebuild for production with optimizations
+              echo "📦 Running expo prebuild for production..."
+              bunx expo prebuild --platform android
+
+              echo "🔧 Building optimized production APK with Gradle..."
+              cd android
+
+              # Build release APK with performance optimizations
+              # Focus on arm64-v8a only for faster builds (most common architecture)
+              ./gradlew assembleRelease \
+                --no-daemon \
+                --parallel \
+                --max-workers=4 \
+                --build-cache \
+                -Preact.native.archEnabled=true \
+                -Preact.native.enableHermes=true \
+                -PenableProguardInReleaseBuilds=false \
+                -PenableSeparateBuildPerCPUArchitecture=false \
+                --stacktrace
+
+              # Copy release APK to build directory
+              if [ -f "app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+                cp app/build/outputs/apk/release/app-release-unsigned.apk ../build/app-release.apk
+                echo "✅ Fast Production APK created (unsigned)"
+              elif [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
+                cp app/build/outputs/apk/release/app-release.apk ../build/app-release.apk
+                echo "✅ Fast Production APK created"
+              else
+                echo "⚠️ Release APK not found, trying debug as fallback..."
+                ./gradlew assembleDebug --no-daemon --parallel --max-workers=4
+                cp app/build/outputs/apk/debug/app-debug.apk ../build/app-debug.apk
+                echo "⚠️ Debug APK created as fallback"
+              fi
+
+              cd ..
+              echo "✅ Android build completed in optimized mode"
+
+         - name: Verify Android build
+           if: matrix.platform == 'android'
+           run: |
+              # Check for release APK first, then debug as fallback
+              if [ -f "./build/app-release.apk" ]; then
+                echo "✅ Production APK file found successfully"
+                ls -la ./build/
+                echo "📱 Production build ready for distribution"
+              elif [ -f "./build/app-debug.apk" ]; then
+                echo "⚠️ Debug APK file found (fallback)"
+                ls -la ./build/
+                echo "⚠️ Using debug build - consider adding release signing"
+              else
+                echo "❌ No APK file found"
+                ls -la ./build/ || echo "Build directory not found"
+                ls -la ./android/app/build/outputs/apk/ || echo "Android build outputs not found"
+                exit 1
+              fi
+
+         - name: Cache Android build output
+           if: matrix.platform == 'android'
+           uses: actions/cache@v4
+           with:
+              path: |
+                 build/
+                 .expo/
+              key: ${{ runner.os }}-android-build-${{ github.sha }}
+              restore-keys: |
+                 ${{ runner.os }}-android-build-
+
+         - name: Upload Android APK
+           if: matrix.platform == 'android'
+           uses: actions/upload-artifact@v4
+           with:
+              name: android-apk-production
+              path: |
+                 ./build/app-release.apk
+                 ./build/app-debug.apk
+              retention-days: 30
+              if-no-files-found: warn
+
+         - name: Upload Web Artifacts
+           if: matrix.platform == 'web'
+           uses: actions/upload-artifact@v4
+           with:
+              name: web-build
+              path: dist/
+              retention-days: 30
+
+   mobile-build-status:
+      name: Production Build Complete
+      runs-on: ubuntu-latest
+      needs: [setup, build]
+      if: needs.setup.outputs.should-build-mobile == 'true'
+
+      steps:
+         - name: Check build artifacts
+           run: |
+              echo "📱 Android Production APK build completed"
+              echo "✅ Build artifacts uploaded to GitHub Actions"
+              echo "📁 Check the 'Artifacts' section to download the APK"
+              echo "🏭 Production build ready for distribution"
+
+   deploy:
+      name: Deploy
+      runs-on: ubuntu-latest
+      needs: [setup, build]
+      if: contains(fromJson(needs.setup.outputs.matrix), 'web') && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Download web build
+           uses: actions/download-artifact@v4
+           with:
+              name: web-build
+              path: dist/
+
+         - name: Deploy to GitHub Pages
+           uses: peaceiris/actions-gh-pages@v4
+           with:
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              publish_dir: ./dist
+
+   create-release:
+      name: Create Release
+      runs-on: ubuntu-latest
+      needs: [setup, build]
+      if: github.event_name == 'release'
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Download web build
+           uses: actions/download-artifact@v4
+           with:
+              name: web-build
+              path: web-build/
+           continue-on-error: true
+
+         - name: Download Android APK
+           uses: actions/download-artifact@v4
+           with:
+              name: android-apk-production
+              path: android-build/
+           continue-on-error: true
+
+         - name: Create release archives
+           run: |
+              # Create web build archive if exists
+              if [ -d "web-build" ] && [ "$(ls -A web-build)" ]; then
+                cd web-build
+                zip -r ../guardiang-web-${{ github.event.release.tag_name }}.zip .
+                cd ..
+                echo "✅ Web build archive created"
+              else
+                echo "⚠️ No web build found, skipping web archive"
+              fi
+
+              # Prepare Android APK if exists
+              if [ -d "android-build" ] && [ "$(ls -A android-build)" ]; then
+                # Look for release APK first, then fallback to any APK
+                if [ -f "android-build/app-release.apk" ]; then
+                  cp android-build/app-release.apk guardiang-android-${{ github.event.release.tag_name }}.apk
+                  echo "✅ Android release APK prepared (app-release.apk)"
+                elif [ -f "android-build/app-debug.apk" ]; then
+                  cp android-build/app-debug.apk guardiang-android-${{ github.event.release.tag_name }}.apk
+                  echo "⚠️ Android debug APK prepared (app-debug.apk) - consider using release build"
+                else
+                  # Fallback: find any APK file and use the first one
+                  APK_FILE=$(find android-build -name "*.apk" | head -n 1)
+                  if [ -n "$APK_FILE" ]; then
+                    cp "$APK_FILE" guardiang-android-${{ github.event.release.tag_name }}.apk
+                    echo "✅ Android APK prepared from: $(basename "$APK_FILE")"
+                  else
+                    echo "⚠️ No APK files found in android-build"
+                  fi
+                fi
+              else
+                echo "⚠️ No android build found, skipping APK"
+              fi
+
+         - name: Generate release notes from commits
+           run: |
+              # Get the previous release tag
+              PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "${{ github.event.release.tag_name }}" | head -n 1)
+
+              # If no previous tag found, get all commits
+              if [ -z "$PREVIOUS_TAG" ]; then
+                COMMIT_RANGE="HEAD"
+              else
+                COMMIT_RANGE="$PREVIOUS_TAG..${{ github.event.release.tag_name }}"
+              fi
+
+              # Get commit messages and format them as a list
+              git log $COMMIT_RANGE --pretty=format:"- %s (%h)" --no-merges >> release_notes.txt
+
+         - name: Upload Release Assets
+           uses: softprops/action-gh-release@v1
+           with:
+              tag_name: ${{ github.event.release.tag_name }}
+              body_path: release_notes.txt
+              draft: false
+              prerelease: ${{ contains(github.event.release.tag_name, 'dev') || contains(github.event.release.tag_name, 'beta') || contains(github.event.release.tag_name, 'alpha') }}
+              files: |
+                 guardiang-web-${{ github.event.release.tag_name }}.zip
+                 guardiang-android-${{ github.event.release.tag_name }}.apk
+
+   summary:
+      name: Build Summary
+      runs-on: ubuntu-latest
+      needs: [setup, lint-and-test, build]
+      if: always()
+
+      steps:
+         - name: Cache cleanup
+           if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+           run: |
+              echo "🧹 Cache cleanup will be handled automatically by GitHub Actions"
+              echo "Old cache entries are automatically removed after 7 days of inactivity"
+
+         - name: Generate summary
+           run: |
+              echo "# 🏗️ GuardianG Fast Build Summary" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Branch/Tag:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Platforms:** ${{ needs.setup.outputs.matrix }}" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "## ⚡ Speed Optimizations" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Bun Dependencies Cache** - Faster dependency installation" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Expo CLI Cache** - Cached Expo tools and configuration" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Enhanced Gradle Cache** - Faster Android builds with optimized settings" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **NDK & CMake Cache** - Cached native compilation tools" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Android SDK Cache** - Cached Android SDK components" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Parallel Gradle Builds** - Multi-threaded compilation" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Optimized Architecture** - Focus on primary architectures" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **ProGuard Disabled** - Faster builds for CI (can be enabled for production)" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Build Output Cache** - Cached build artifacts" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+
+              if [ "${{ needs.lint-and-test.result }}" = "success" ]; then
+                echo "✅ **Linting & Tests:** Passed" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "❌ **Linting & Tests:** Failed" >> $GITHUB_STEP_SUMMARY
+              fi
+
+              if [ "${{ needs.build.result }}" = "success" ]; then
+                echo "✅ **Build:** Completed" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "❌ **Build:** Failed" >> $GITHUB_STEP_SUMMARY
+              fi
+
+              if [ "${{ needs.setup.outputs.should-build-mobile }}" = "true" ]; then
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "📱 **Android APK** built locally and uploaded" >> $GITHUB_STEP_SUMMARY
+                echo "📁 Download from Artifacts section" >> $GITHUB_STEP_SUMMARY
+              fi

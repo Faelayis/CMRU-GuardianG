@@ -1,0 +1,16 @@
+{
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "always",
+		"source.fixAll.eslint": "always",
+		"source.fixAll.sortJSON": "never",
+		"source.removeUnused.ts": "never",
+		"source.sort.json": "never",
+		"source.addMissingImports.ts": "always",
+		"source.removeUnusedImports": "never"
+	},
+	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
+	"editor.formatOnSave": true,
+	"files.exclude": {
+		"node_modules": true
+	}
+}

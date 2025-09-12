@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -12,7 +13,9 @@ export default function TrackingScreen() {
 				</View>
 				<View style={styles.profileContainer}>
 					<View style={styles.profileImage}>
-						<Text style={styles.profileEmoji}>👤</Text>
+						<Text style={styles.profileEmoji} onPress={() => router.push("/profile")}>
+							👤
+						</Text>
 					</View>
 				</View>
 			</View>

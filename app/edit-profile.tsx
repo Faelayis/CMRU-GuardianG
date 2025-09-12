@@ -3,11 +3,11 @@ import { router } from "expo-router";
 import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function ProfileScreen() {
+export default function EditProfileScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
-				<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+				<TouchableOpacity onPress={() => router.push("/(tabs)/profile")} style={styles.backButton}>
 					<Ionicons name="arrow-back" size={24} color="#333" />
 				</TouchableOpacity>
 				<Text style={styles.headerTitle}>โปรไฟล์</Text>
@@ -52,7 +52,7 @@ export default function ProfileScreen() {
 						</View>
 					</View>
 
-					<TouchableOpacity style={styles.saveButton}>
+					<TouchableOpacity style={styles.saveButton} onPress={() => router.push("/(tabs)/profile")}>
 						<Text style={styles.saveButtonText}>บันทึก</Text>
 					</TouchableOpacity>
 				</View>

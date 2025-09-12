@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -26,7 +27,7 @@ export default function ProfileTab() {
 				</View>
 
 				<View style={styles.menuContainer}>
-					<TouchableOpacity style={styles.menuItem}>
+					<TouchableOpacity style={styles.menuItem} onPress={() => router.push("/edit-profile")}>
 						<View style={styles.menuIcon}>
 							<Ionicons name="person" size={20} color="#FF8FA3" />
 						</View>
@@ -58,7 +59,7 @@ export default function ProfileTab() {
 						<Ionicons name="chevron-forward" size={20} color="#666" />
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.menuItem}>
+					<TouchableOpacity style={styles.menuItem} onPress={() => router.push("/signup")}>
 						<View style={styles.menuIcon}>
 							<Ionicons name="log-out" size={20} color="#FF4444" />
 						</View>

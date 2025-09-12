@@ -52,7 +52,7 @@ export default function LoginScreen() {
 						<Ionicons name="chevron-forward" size={20} color="#666" />
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.option} onPress={() => router.push("/signup" as any)}>
+					<TouchableOpacity style={styles.option} onPress={() => router.push("/signup")}>
 						<Text style={styles.optionText}>สมัครสมาชิก</Text>
 						<Ionicons name="chevron-forward" size={20} color="#666" />
 					</TouchableOpacity>

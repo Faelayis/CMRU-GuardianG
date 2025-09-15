@@ -15,7 +15,7 @@ export default function HomeScreen() {
 				</View>
 				<View style={styles.profileContainer}>
 					<View style={styles.profileImage}>
-						<Text style={styles.profileEmoji} onPress={() => router.push("/profile")}>
+						<Text style={styles.profileEmoji} onPress={() => router.push("/(tabs-parent)/profile-parent")}>
 							👤
 						</Text>
 					</View>

@@ -31,21 +31,21 @@ export default function TabLayout() {
 			}}
 		>
 			<Tabs.Screen
-				name="index"
+				name="index-drive"
 				options={{
 					title: "",
 					tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "home" : "home-outline"} size={24} color="white" />,
 				}}
 			/>
 			<Tabs.Screen
-				name="explore"
+				name="explore-drive"
 				options={{
 					title: "",
 					tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "car-sport" : "car-sport-outline"} size={24} color="white" />,
 				}}
 			/>
 			<Tabs.Screen
-				name="chat"
+				name="chat-drive"
 				options={{
 					title: "",
 					tabBarIcon: ({ color, focused }) => (
@@ -54,7 +54,7 @@ export default function TabLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="profile"
+				name="profile-drive"
 				options={{
 					title: "",
 					tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? "person" : "person-outline"} size={24} color="white" />,

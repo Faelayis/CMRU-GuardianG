@@ -4,6 +4,7 @@
 	"main": "expo-router/entry",
 	"scripts": {
 		"android": "expo start --android",
+		"dev": "expo start",
 		"fix": "eslint . --fix",
 		"preinstall": "npx only-allow bun",
 		"ios": "expo start --ios",

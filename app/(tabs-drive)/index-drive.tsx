@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useState } from "react";
 import { Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useModeNavigation } from "@/hooks/useModeNavigation";
 
 export default function HomeScreen() {
 	const [searchText, setSearchText] = useState("");
+	const { switchMode } = useModeNavigation();
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -15,7 +16,7 @@ export default function HomeScreen() {
 				</View>
 				<View style={styles.profileContainer}>
 					<View style={styles.profileImage}>
-						<Text style={styles.profileEmoji} onPress={() => router.push("/(tabs-drive)/profile-drive")}>
+						<Text style={styles.profileEmoji} onPress={switchMode}>
 							👤
 						</Text>
 					</View>

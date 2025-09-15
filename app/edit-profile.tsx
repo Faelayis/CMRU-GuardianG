@@ -1,13 +1,16 @@
+import { useMode } from "@/contexts/ModeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function EditProfileScreen() {
+	const { mode } = useMode();
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
-				<TouchableOpacity onPress={() => router.push("/(tabs)/profile")} style={styles.backButton}>
+				<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
 					<Ionicons name="arrow-back" size={24} color="#333" />
 				</TouchableOpacity>
 				<Text style={styles.headerTitle}>โปรไฟล์</Text>
@@ -17,7 +20,7 @@ export default function EditProfileScreen() {
 			<View style={styles.content}>
 				<View style={styles.profileImageContainer}>
 					<View style={styles.profileImage}>
-						<Text style={styles.profileEmoji}>👨‍💼</Text>
+						<Text style={styles.profileEmoji}>{mode === "drive" ? "👨‍💼" : "👨‍👩‍👧‍👦"}</Text>
 					</View>
 				</View>
 
@@ -52,7 +55,7 @@ export default function EditProfileScreen() {
 						</View>
 					</View>
 
-					<TouchableOpacity style={styles.saveButton} onPress={() => router.push("/(tabs)/profile")}>
+					<TouchableOpacity style={styles.saveButton} onPress={() => router.back()}>
 						<Text style={styles.saveButtonText}>บันทึก</Text>
 					</TouchableOpacity>
 				</View>

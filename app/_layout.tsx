@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { ModeProvider } from "@/contexts/ModeContext";
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();
@@ -17,17 +18,20 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-			<Stack screenOptions={{ headerShown: false }}>
-				<Stack.Screen name="splash" options={{ headerShown: false }} />
-				<Stack.Screen name="login" options={{ headerShown: false }} />
-				<Stack.Screen name="signup" options={{ headerShown: false }} />
-				<Stack.Screen name="tracking" options={{ headerShown: false }} />
-				<Stack.Screen name="notifications" options={{ headerShown: false }} />
-				<Stack.Screen name="edit-profile" options={{ headerShown: false }} />
-				<Stack.Screen name="+not-found" />
-			</Stack>
-			<StatusBar style="auto" />
-		</ThemeProvider>
+		<ModeProvider>
+			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+				<Stack screenOptions={{ headerShown: false }}>
+					<Stack.Screen name="splash" options={{ headerShown: false }} />
+					<Stack.Screen name="login" options={{ headerShown: false }} />
+					<Stack.Screen name="signup" options={{ headerShown: false }} />
+					<Stack.Screen name="(tabs-drive)" options={{ headerShown: false }} />
+					<Stack.Screen name="(tabs-parent)" options={{ headerShown: false }} />
+					<Stack.Screen name="notifications" options={{ headerShown: false }} />
+					<Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+					<Stack.Screen name="+not-found" />
+				</Stack>
+				<StatusBar style="auto" />
+			</ThemeProvider>
+		</ModeProvider>
 	);
 }

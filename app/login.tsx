@@ -52,7 +52,7 @@ export default function LoginScreen() {
 						<Ionicons name="chevron-forward" size={20} color="#666" />
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.loginButton} onPress={() => router.push("/(tabs-drive)/chat-drive")}>
+					<TouchableOpacity style={styles.loginButton} onPress={() => router.push("/(tabs-parent)/profile-parent")}>
 						<Text style={styles.loginButtonText}>เข้าสู่ระบบ</Text>
 					</TouchableOpacity>
 				</View>

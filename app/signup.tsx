@@ -62,7 +62,7 @@ export default function SignUpScreen() {
 						</View>
 					</View>
 
-					<TouchableOpacity style={styles.signUpButton} onPress={() => router.push("/(tabs)")}>
+					<TouchableOpacity style={styles.signUpButton} onPress={() => router.push("/(tabs-parent)/profile-parent")}>
 						<Text style={styles.signUpButtonText}>สมัครสมาชิก</Text>
 					</TouchableOpacity>
 				</View>

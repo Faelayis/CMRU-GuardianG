@@ -3,17 +3,28 @@ import { router } from "expo-router";
 import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import { useMode } from "@/contexts/ModeContext";
+import { useModeNavigation } from "@/hooks/useModeNavigation";
+
 export default function ProfileTab() {
+	const { mode } = useMode();
+	const { switchMode } = useModeNavigation();
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
-				<Text style={styles.headerTitle}>โปรไฟล์</Text>
+				<Text style={styles.headerTitle}>โปรไฟล์ - โหมดคนขับ</Text>
+				<View style={styles.modeIndicator}>
+					<Text style={styles.modeText}>DRIVER</Text>
+				</View>
 			</View>
 
 			<View style={styles.content}>
 				<View style={styles.profileImageContainer}>
 					<View style={styles.profileImage}>
-						<Text style={styles.profileEmoji}>👨‍💼</Text>
+						<Text style={styles.profileEmoji} onPress={switchMode}>
+							👨‍💼
+						</Text>
 					</View>
 				</View>
 
@@ -21,6 +32,7 @@ export default function ProfileTab() {
 					<Text style={styles.name}>นายประยุทธ คมยุง</Text>
 					<Text style={styles.phone}>123-456-7890</Text>
 					<Text style={styles.address}>เลขที่ 1 ศรีภูมิ</Text>
+					<Text style={styles.mode}>โหมด: {mode === "drive" ? "คนขับ" : "ผู้ปกครอง"}</Text>
 				</View>
 
 				<View style={styles.menuContainer}>
@@ -62,6 +74,17 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: "bold",
 		color: "#333",
+	},
+	modeIndicator: {
+		backgroundColor: "#FF8FA3",
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 12,
+	},
+	modeText: {
+		color: "white",
+		fontSize: 12,
+		fontWeight: "bold",
 	},
 	settingsButton: {
 		width: 40,
@@ -106,6 +129,12 @@ const styles = StyleSheet.create({
 	address: {
 		fontSize: 16,
 		color: "#666",
+		marginBottom: 3,
+	},
+	mode: {
+		fontSize: 14,
+		color: "#FF8FA3",
+		fontWeight: "bold",
 	},
 	menuContainer: {
 		backgroundColor: "white",

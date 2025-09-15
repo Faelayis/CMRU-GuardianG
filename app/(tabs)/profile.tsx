@@ -43,22 +43,6 @@ export default function ProfileTab() {
 						<Ionicons name="chevron-forward" size={20} color="#666" />
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.menuItem}>
-						<View style={styles.menuIcon}>
-							<Ionicons name="shield-checkmark" size={20} color="#FF8FA3" />
-						</View>
-						<Text style={styles.menuText}>ความปลอดภัย</Text>
-						<Ionicons name="chevron-forward" size={20} color="#666" />
-					</TouchableOpacity>
-
-					<TouchableOpacity style={styles.menuItem}>
-						<View style={styles.menuIcon}>
-							<Ionicons name="help-circle" size={20} color="#FF8FA3" />
-						</View>
-						<Text style={styles.menuText}>ความช่วยเหลือ</Text>
-						<Ionicons name="chevron-forward" size={20} color="#666" />
-					</TouchableOpacity>
-
 					<TouchableOpacity style={styles.menuItem} onPress={() => router.push("/signup")}>
 						<View style={styles.menuIcon}>
 							<Ionicons name="log-out" size={20} color="#FF4444" />

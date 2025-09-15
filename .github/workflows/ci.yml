@@ -319,8 +319,8 @@ jobs:
            with:
               name: android-apk-production
               path: |
-                 ./build/app-release.apk
-                 ./build/app-debug.apk
+                 ./build/*.apk
+                 ./android/app/build/outputs/apk/**/*.apk
               retention-days: 30
               if-no-files-found: warn
 
@@ -452,54 +452,3 @@ jobs:
               files: |
                  guardiang-web-${{ github.event.release.tag_name }}.zip
                  guardiang-android-${{ github.event.release.tag_name }}.apk
-
-   summary:
-      name: Build Summary
-      runs-on: ubuntu-latest
-      needs: [setup, lint-and-test, build]
-      if: always()
-
-      steps:
-         - name: Cache cleanup
-           if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-           run: |
-              echo "🧹 Cache cleanup will be handled automatically by GitHub Actions"
-              echo "Old cache entries are automatically removed after 7 days of inactivity"
-
-         - name: Generate summary
-           run: |
-              echo "# 🏗️ GuardianG Fast Build Summary" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-              echo "**Branch/Tag:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-              echo "**Platforms:** ${{ needs.setup.outputs.matrix }}" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "## ⚡ Speed Optimizations" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Bun Dependencies Cache** - Faster dependency installation" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Expo CLI Cache** - Cached Expo tools and configuration" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Enhanced Gradle Cache** - Faster Android builds with optimized settings" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **NDK & CMake Cache** - Cached native compilation tools" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Android SDK Cache** - Cached Android SDK components" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Parallel Gradle Builds** - Multi-threaded compilation" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Optimized Architecture** - Focus on primary architectures" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **ProGuard Disabled** - Faster builds for CI (can be enabled for production)" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Build Output Cache** - Cached build artifacts" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-
-              if [ "${{ needs.lint-and-test.result }}" = "success" ]; then
-                echo "✅ **Linting & Tests:** Passed" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "❌ **Linting & Tests:** Failed" >> $GITHUB_STEP_SUMMARY
-              fi
-
-              if [ "${{ needs.build.result }}" = "success" ]; then
-                echo "✅ **Build:** Completed" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "❌ **Build:** Failed" >> $GITHUB_STEP_SUMMARY
-              fi
-
-              if [ "${{ needs.setup.outputs.should-build-mobile }}" = "true" ]; then
-                echo "" >> $GITHUB_STEP_SUMMARY
-                echo "📱 **Android APK** built locally and uploaded" >> $GITHUB_STEP_SUMMARY
-                echo "📁 Download from Artifacts section" >> $GITHUB_STEP_SUMMARY
-              fi

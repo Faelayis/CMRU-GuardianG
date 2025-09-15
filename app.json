@@ -2,7 +2,7 @@
 	"expo": {
 		"name": "GuardianG",
 		"slug": "GuardianG",
-		"version": "1.0.0",
+		"version": "0.1.2",
 		"orientation": "portrait",
 		"icon": "./assets/images/icon.png",
 		"scheme": "guardiang",
@@ -18,7 +18,7 @@
 				"foregroundImage": "./assets/images/adaptive-icon.png",
 				"backgroundColor": "#ffffff"
 			},
-			"edgeToEdgeEnabled": true
+			"edgeToEdgeEnabled": false
 		},
 		"web": {
 			"bundler": "metro",

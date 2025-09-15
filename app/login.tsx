@@ -9,11 +9,11 @@ export default function LoginScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<View style={styles.header}>
-				<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-					<Ionicons name="arrow-back" size={24} color="white" />
-				</TouchableOpacity>
-			</View>
+		<View style={styles.header}>
+			<TouchableOpacity onPress={() => router.push("/splash")} style={styles.backButton}>
+				<Ionicons name="arrow-back" size={24} color="white" />
+			</TouchableOpacity>
+		</View>
 
 			<View style={styles.content}>
 				<View style={styles.logoSection}>
@@ -46,11 +46,6 @@ export default function LoginScreen() {
 							<Ionicons name="lock-closed" size={20} color="#999" style={styles.lockIcon} />
 						</View>
 					</View>
-
-					<TouchableOpacity style={styles.option}>
-						<Text style={styles.optionText}>ลืมรหัสผ่าน</Text>
-						<Ionicons name="chevron-forward" size={20} color="#666" />
-					</TouchableOpacity>
 
 					<TouchableOpacity style={styles.option} onPress={() => router.push("/signup")}>
 						<Text style={styles.optionText}>สมัครสมาชิก</Text>

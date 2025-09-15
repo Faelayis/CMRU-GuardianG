@@ -68,9 +68,6 @@ export default function ChatScreen() {
 		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.headerTitle}>แชท</Text>
-				<TouchableOpacity style={styles.searchButton}>
-					<Ionicons name="search" size={24} color="#333" />
-				</TouchableOpacity>
 			</View>
 
 			<ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>

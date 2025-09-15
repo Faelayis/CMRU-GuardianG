@@ -8,9 +8,6 @@ export default function ProfileTab() {
 		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.headerTitle}>โปรไฟล์</Text>
-				<TouchableOpacity style={styles.settingsButton}>
-					<Ionicons name="settings" size={24} color="#333" />
-				</TouchableOpacity>
 			</View>
 
 			<View style={styles.content}>
@@ -35,15 +32,7 @@ export default function ProfileTab() {
 						<Ionicons name="chevron-forward" size={20} color="#666" />
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.menuItem}>
-						<View style={styles.menuIcon}>
-							<Ionicons name="notifications" size={20} color="#FF8FA3" />
-						</View>
-						<Text style={styles.menuText}>การแจ้งเตือน</Text>
-						<Ionicons name="chevron-forward" size={20} color="#666" />
-					</TouchableOpacity>
-
-					<TouchableOpacity style={styles.menuItem} onPress={() => router.push("/signup")}>
+					<TouchableOpacity style={styles.menuItem} onPress={() => router.push("/login")}>
 						<View style={styles.menuIcon}>
 							<Ionicons name="log-out" size={20} color="#FF4444" />
 						</View>

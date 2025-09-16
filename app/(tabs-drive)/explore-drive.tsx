@@ -35,6 +35,18 @@ export default function ExploreScreen() {
 			<View style={styles.mapContainer}>
 				<Image source={require("@/assets/images/preview/drive_map.png")} style={styles.mapImage} resizeMode="cover" />
 			</View>
+
+			<View style={styles.actionsContainer}>
+				<View style={styles.actionButton}>
+					<Ionicons name="location" size={20} color="white" />
+					<Text style={styles.actionText}>ถึงที่หมาย</Text>
+				</View>
+				<View style={styles.actionButton}>
+					<Ionicons name="home" size={20} color="white" />
+					<Text style={styles.actionText}>บ้านต่อไป</Text>
+				</View>
+			</View>
+
 		</SafeAreaView>
 	);
 }

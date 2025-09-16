@@ -46,7 +46,6 @@ export default function ExploreScreen() {
 					<Text style={styles.actionText}>บ้านต่อไป</Text>
 				</View>
 			</View>
-
 		</SafeAreaView>
 	);
 }

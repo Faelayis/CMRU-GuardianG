@@ -20,14 +20,14 @@ export default function RootLayout() {
 	return (
 		<ModeProvider>
 			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-				<Stack screenOptions={{ headerShown: false }}>
-					<Stack.Screen name="splash" options={{ headerShown: false }} />
-					<Stack.Screen name="login" options={{ headerShown: false }} />
+				<Stack screenOptions={{ headerShown: false, statusBarHidden: true }}>
+					<Stack.Screen name="splash" options={{ headerShown: false, statusBarHidden: true }} />
+					<Stack.Screen name="login" options={{ headerShown: false, statusBarHidden: true }} />
 					<Stack.Screen name="signup" options={{ headerShown: false }} />
-					<Stack.Screen name="(tabs-drive)" options={{ headerShown: false }} />
-					<Stack.Screen name="(tabs-parent)" options={{ headerShown: false }} />
-					<Stack.Screen name="notifications" options={{ headerShown: false }} />
-					<Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+					<Stack.Screen name="(tabs-drive)" options={{ headerShown: false, statusBarHidden: true }} />
+					<Stack.Screen name="(tabs-parent)" options={{ headerShown: false, statusBarHidden: true }} />
+					<Stack.Screen name="notifications" options={{ headerShown: false, statusBarHidden: true }} />
+					<Stack.Screen name="edit-profile" options={{ headerShown: false, statusBarHidden: true }} />
 					<Stack.Screen name="+not-found" />
 				</Stack>
 				<StatusBar style="auto" />

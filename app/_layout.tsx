@@ -17,18 +17,20 @@ export default function RootLayout() {
 		return null;
 	}
 
+	const screenOptions = { headerShown: false, statusBarHidden: true };
+
 	return (
 		<ModeProvider>
 			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-				<Stack screenOptions={{ headerShown: false, statusBarHidden: true }}>
-					<Stack.Screen name="splash" options={{ headerShown: false, statusBarHidden: true }} />
-					<Stack.Screen name="login" options={{ headerShown: false, statusBarHidden: true }} />
-					<Stack.Screen name="signup" options={{ headerShown: false }} />
-					<Stack.Screen name="(tabs-drive)" options={{ headerShown: false, statusBarHidden: true }} />
-					<Stack.Screen name="(tabs-parent)" options={{ headerShown: false, statusBarHidden: true }} />
-					<Stack.Screen name="notifications" options={{ headerShown: false, statusBarHidden: true }} />
-					<Stack.Screen name="edit-profile" options={{ headerShown: false, statusBarHidden: true }} />
-					<Stack.Screen name="+not-found" />
+				<Stack screenOptions={screenOptions}>
+					<Stack.Screen name="splash" options={screenOptions} />
+					<Stack.Screen name="login" options={screenOptions} />
+					<Stack.Screen name="signup" options={screenOptions} />
+					<Stack.Screen name="(tabs-drive)" options={screenOptions} />
+					<Stack.Screen name="(tabs-parent)" options={screenOptions} />
+					<Stack.Screen name="notifications" options={screenOptions} />
+					<Stack.Screen name="edit-profile" options={screenOptions} />
+					<Stack.Screen name="+not-found" options={screenOptions} />
 				</Stack>
 				<StatusBar style="auto" />
 			</ThemeProvider>
